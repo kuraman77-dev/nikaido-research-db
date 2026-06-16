@@ -10,6 +10,13 @@ constants / db / analysis / UI を1ファイルに統合。
 import json
 import datetime as dt
 
+# 日本標準時（JST = UTC+9）。サーバーがUTCで動くため、日付・時刻は必ずJSTで扱う。
+JST = dt.timezone(dt.timedelta(hours=9))
+
+
+def now_jst():
+    return dt.datetime.now(JST)
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -186,7 +193,7 @@ def add_trade(d):
     pnl = calc_pnl(d["side"], d["shares"], d["in_price"], d["out_price"])
     ws = _ws("trades", TRADES_HEADERS)
     new_id = _next_id(_load_trades_records())
-    created = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    created = now_jst().strftime("%Y-%m-%d %H:%M:%S")
     ws.append_row([
         new_id, d["trade_date"], d["entry_time"], d["stock_code"], d["stock_name"],
         d["side"], d["shares"], d["in_price"], d["out_price"], pnl,
@@ -416,9 +423,9 @@ def page_input():
     st.header("✍️ トレード入力")
     c1, c2 = st.columns(2)
     with c1:
-        trade_date = st.date_input("日付", value=dt.date.today())
+        trade_date = st.date_input("日付", value=now_jst().date())
     with c2:
-        entry_time = st.time_input("エントリー時刻", value=dt.datetime.now().time())
+        entry_time = st.time_input("エントリー時刻", value=now_jst().time())
 
     c3, c4 = st.columns([1, 2])
     with c3:
