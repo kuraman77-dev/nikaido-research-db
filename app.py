@@ -136,10 +136,16 @@ def _ensure_headers(ws, headers):
     """見出し行を headers に揃える。既存データを壊さず、末尾に新列だけ追加する。"""
     existing = ws.row_values(1)
     if not existing:
+        # 列数が足りなければ先に拡張してから書き込む
+        if ws.col_count < len(headers):
+            ws.add_cols(len(headers) - ws.col_count)
         ws.append_row(headers, value_input_option="RAW")
         return
     # 既存見出しが新見出しの先頭部分と一致する＝安全に拡張できる
     if headers[:len(existing)] == existing and len(headers) > len(existing):
+        # シートの物理列数が足りないと書き込めないので先に列を増やす
+        if ws.col_count < len(headers):
+            ws.add_cols(len(headers) - ws.col_count)
         for idx in range(len(existing), len(headers)):
             ws.update_cell(1, idx + 1, headers[idx])
 
